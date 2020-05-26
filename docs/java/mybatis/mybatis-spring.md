@@ -255,7 +255,7 @@ public MapperFactoryBean<UserMapper> userMapper() throws Exception {
   - 使用 @MapperScan 注解
   - 在经典 Spring XML 配置文件中注册一个 MapperScannerConfigurer
 
-<mybatis:scan/> 和 @MapperScan 都在 MyBatis-Spring 1.2.0 中被引入。@MapperScan 需要使用 Spring 3.1+。
+`<mybatis:scan/>` 和 @MapperScan 都在 MyBatis-Spring 1.2.0 中被引入。@MapperScan 需要使用 Spring 3.1+。
 
 
 #### mybatis-spring示例代码

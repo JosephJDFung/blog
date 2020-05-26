@@ -81,7 +81,7 @@ try (SqlSession session = sqlSessionFactory.openSession()) {
 
 * 一个语句既可以通过 XML 定义，也可以通过注解定义。我们先看看 XML 定义语句的方式，事实上 MyBatis 提供的所有特性都可以利用基于 XML 的映射语言来实现，这使得 MyBatis 在过去的数年间得以流行。如果你用过旧版本的 MyBatis，你应该对这个概念比较熟悉。 但相比于之前的版本，新版本改进了许多 XML 的配置，后面我们会提到这些改进。这里给出一个基于 XML 映射语句的示例，它应该可以满足上个示例中 SqlSession 的调用。
 
-```java
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -141,7 +141,7 @@ SqlSessionFactory 一旦被创建就应该在应用的运行期间一直存在�
     - databaseIdProvider（数据库厂商标识）
     - mappers（映射器）
 
-[官网说明](https://mybatis.org/mybatis-3/zh/configuration.html#settings)
+[官网说明](https://mybatis.org/mybatis-3/configuration.html#settings)
 
 #### XML映射器
 
@@ -154,7 +154,7 @@ SqlSessionFactory 一旦被创建就应该在应用的运行期间一直存在�
 - update – 映射更新语句。
 - delete – 映射删除语句。
 - select – 映射查询语句。
-[官网说明](https://mybatis.org/mybatis-3/zh/sqlmap-xml.html)
+[官网说明](https://mybatis.org/mybatis-3/sqlmap-xml.html)
 
 #### 动态 SQL
 
@@ -163,7 +163,7 @@ SqlSessionFactory 一旦被创建就应该在应用的运行期间一直存在�
 - trim (where, set)
 - foreach
 
-[官网说明](https://mybatis.org/mybatis-3/zh/dynamic-sql.html)
+[官网说明](https://mybatis.org/mybatis-3/dynamic-sql.html)
 
 #### Java API & 接口映射器
 
@@ -172,4 +172,4 @@ SqlSessionFactory 一旦被创建就应该在应用的运行期间一直存在�
 - SqlSession
 - 映射器注解
 
-[官网说明](https://mybatis.org/mybatis-3/zh/java-api.html#sqlSessions)
+[官网说明](https://mybatis.org/mybatis-3/java-api.html#sqlSessions)
