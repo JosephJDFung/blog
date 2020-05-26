@@ -9,6 +9,17 @@
 ### spring核心
 Spring的核心是控制反转（IoC）和面向切面（AOP）
 * 核心容器：beans、core、context、expression
+
+- Core 模块：封装了框架依赖的最底层部分，包括资源访问、类型转换及一些常用工具类。
+- Beans 模块：提供了框架的基础部分，包括反转控制和依赖注入。其中 BeanFactory 是容器核心，本质是“工厂
+设计模式”的实现，而且无需编程实现“单例设计模式”，单例完全由容器控制，而且提倡面向接口编程，而非面向实
+现编程；所有应用程序对象及对象间关系由框架管理，从而真正把你从程序逻辑中把维护对象之间的依赖关系提取出
+来，所有这些依赖关系都由 BeanFactory 来维护。
+- Context 模块：以 Core 和 Beans 为基础，集成 Beans 模块功能并添加资源绑定、数据验证、国际化、Java EE 支持、容器生命周期、事件传播等；核心接口是 ApplicationContext。
+- EL 模块：提供强大的表达式语言支持，支持访问和修改属性值，方法调用，支持访问及修改数组、容器和索引器，
+命名变量，支持算数和逻辑运算，支持从 Spring 容器获取 Bean，它也支持列表投影、选择和一般的列表聚合等。
+
+
 ### spring优点
 
 - 方便解耦，简化开发  （高内聚低耦合）
@@ -27,6 +38,20 @@ Spring的核心是控制反转（IoC）和面向切面（AOP）
 
 
 ### ioc & di
+
+* 控制反转（IOC），传统的 java 开发模式中，当需要一个对象时，我们会自己使用 new 或者 getInstance 等直接
+或者间接调用构造方法创建一个对象。而在 spring 开发模式中，spring 容器使用了工厂模式为我们创建了所需要的对
+象，不需要我们自己创建了，直接调用 spring 提供的对象就可以了，这是控制反转的思想。
+
+* 依赖注入（DI），spring 使用 javaBean 对象的 set 方法或者带参数的构造方法为我们在创建所需对象时将其属
+性自动设置所需要的值的过程，就是依赖注入的思想。
+
+* Spring IOC 负责创建对象，管理对象。通过依赖注入（DI），装配对象，配置对象，并且管理这些对象的整个生命周期。
+
+* `IOC的优点`:IOC 或 依赖注入把应用的代码量降到最低。它使应用容易测试，单元测试不再需要单例和 JNDI 查找机制。最小
+的代价和最小的侵入性使松散耦合得以实现。IOC 容器支持加载服务时的饿汉式初始化和懒加载。
+
+
 ```
 IoC：<bean id="" class="" >
 DI：<bean> <property name="" value="" | ref="">
@@ -72,6 +97,40 @@ DI：<bean> <property name="" value="" | ref="">
 	- BeanFactory：工厂，用于生成任意bean。
 	- FactoryBean：特殊bean，用于生成另一个特定的bean。例如：ProxyFactoryBean ，此工厂bean用于生产代理。`<bean id="" class="....ProxyFactoryBean">` 获得代理对象实例。
 
+### Spring bean 的生命周期
+- bean 定义：在配置文件里面用`<bean></bean>`来进行定义。
+- bean 初始化：有两种方式初始化:
+	- 1.在配置文件中通过指定 init-method 属性来完成
+	- 2.实现 org.springframwork.beans.factory.InitializingBean 接口
+- bean 调用：有三种方式可以得到 bean 实例，并进行调用
+	- 普通构造方法创建 使用最多的一种创建方式，直接配置bean节点
+	- 静态工厂创建 静态构造方法来创建一个bean的实例
+	- 实例工厂创建
+```java
+	public class UserFactory {
+    public User3 getUser() {
+        return new User();
+		}
+	}
+```
+```xml
+<bean class="org.sang.User3Factory" id="user3Factory"/>
+<bean id="user3" factory-bean="user3Factory" factory-method="getUser3"/>
+```
+- bean 销毁：销毁有两种方式
+	- 1.使用配置文件指定的 destroy-method 属性
+	- 2.实现 org.springframwork.bean.factory.DisposeableBean 接口
+
+### Spring 的内部 bean
+* 当一个 bean 仅被用作另一个 bean 的属性时，它能被声明为一个内部 bean，为了定义 inner bean，在
+Spring 的 基于 XML 的 配置元数据中，可以在 `<property/>`或 `<constructor-arg/> `元素内使用`<bean/>` 元素，内
+部 bean 通常是匿名的，它们的 Scope 一般是 prototype。
+
+### BeanFactory 常用的实现类
+
+Bean 工厂是工厂模式的一个实现，提供了控制反转功能，用来把应用的配置和依赖从正真的应用代码中分离。常
+用的 BeanFactory 实现有 DefaultListableBeanFactory 、 XmlBeanFactory 、 ApplicationContext 等。
+XMLBeanFactory，最常用的就是 org.springframework.beans.factory.xml.XmlBeanFactory ，它根据 XML 文件中的定义加载 beans。该容器从 XML 文件读取配置元数据并用它去创建一个完全配置的系统或应用。
 
 ### 属性依赖注入
 - 依赖注入方式：手动装配 和 自动装配
@@ -82,7 +141,9 @@ DI：<bean> <property name="" value="" | ref="">
 	- byType：按类型装配 
 	- byName：按名称装配
 	- constructor构造装配
-	- auto： 不确定装配
+	- auto： 首先尝试使用 constructor 来自动装配，如果无法工作，则使用 byType 方式。
+
+
 
 ### 基于注解装配Bean 
 

@@ -12,7 +12,7 @@
 - 隔离级别：
 	- read uncommitted：读未提交。存在3个问题
 	- read committed：读已提交。解决脏读，存在2个问题
-	- repeatable read：可重复读。解决：脏读、不可重复读，存在1个问题。
+	- repeatable read：可重复读。解决：脏读、不可重复读，存在虚读。
 	- serializable ：串行化。都解决，单事务。
 
 ### mysql 事务操作
