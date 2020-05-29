@@ -275,7 +275,7 @@ try( Stream< String > lines = Files.lines( path, StandardCharsets.UTF_8 ) ) {
 
 Stream的方法`onClose()` 返回一个等价的有额外句柄的Stream，当Stream的`close()`方法被调用的时候这个句柄会被执行。Stream API、Lambda表达式还有接口默认方法和静态方法支持的方法引用，是Java 8对软件开发的现代范式的响应。
 
-## 8. 并行数组
+### 并行数组
 Java8版本新增了很多新的方法，用于支持并行数组处理。最重要的方法是`parallelSort()`，可以显著加快多核机器上的数组排序。下面的例子论证了parallexXxx系列的方法：
 
 
@@ -304,3 +304,160 @@ public class ParallelArrays {
 ```
 
 上述这些代码使用parallelSetAll()方法生成20000个随机数，然后使用parallelSort()方法进行排序。这个程序会输出乱序数组和排序数组的前10个元素。
+
+### 日期、时间操作
+在Java8之前，日期时间API一直被开发者诟病，包括：java.util.Date是可变类型，SimpleDateFormat非线程安全等问题。故此，Java8引入了一套全新的日期时间处理API，新的API基于ISO标准日历系统。
+
+#### SimpleDateFormat线程不安全原因
+- parse 方法为什么不线程安全
+    - 1.有一个共享变量calendar，而这个共享变量的访问没有做到线程安全
+    - 2.parse方法生成CalendarBuilder，然后通过CalendarBuilder 设值到calendar，最后calendar.getTime();
+
+```java
+private StringBuffer format(Date date, StringBuffer toAppendTo,
+                            FieldDelegate delegate) {
+    // 这里已经彻底毁坏线程的安全性
+    calendar.setTime(date);
+
+    boolean useDateFormatSymbols = useDateFormatSymbols();
+
+    for (int i = 0; i < compiledPattern.length; ) {
+        int tag = compiledPattern[i] >>> 8;
+        int count = compiledPattern[i++] & 0xff;
+        if (count == 255) {
+            count = compiledPattern[i++] << 16;
+            count |= compiledPattern[i++];
+        }
+...
+```
+> 相关类说明
+
+```
+Instant         时间戳
+Duration        持续时间、时间差
+LocalDate       只包含日期，比如：2018-09-24
+LocalTime       只包含时间，比如：10:32:10
+LocalDateTime   包含日期和时间，比如：2018-09-24 10:32:10
+Peroid          时间段
+ZoneOffset      时区偏移量，比如：+8:00
+ZonedDateTime   带时区的日期时间
+Clock           时钟，可用于获取当前时间戳
+java.time.format.DateTimeFormatter      时间格式化类
+```
+
+　Java 8中的 LocalDate 用于表示当天日期。和java.util.Date不同，它只有日期，不包含时间。
+
+```java
+public static void main(String[] args) {
+　　LocalDate now = LocalDate.now();
+　　System.out.println("当前日期=" + date);
+    LocalDate date = LocalDate.of(2000, 1, 1);
+    // 获取年月日信息
+    System.out.printf("年=%d， 月=%d， 日=%d", date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+    // 比较两个日期是否相等
+    System.out.println("日期是否相等=" + now.equals(date));
+}
+```
+
+* 获取当前时间
+
+> Java 8中的 LocalTime 用于表示当天时间。和java.util.Date不同，它只有时间，不包含日期。
+
+> Java8提供了新的plusXxx()方法用于计算日期时间增量值，替代了原来的add()方法。新的API将返回一个全新的日期时间示例，需要使用新的对象进行接收。
+
+```java
+public static void main(String[] args) {
+        
+　　　　 // 时间增量
+        LocalTime time = LocalTime.now();
+        LocalTime newTime = time.plusHours(2);
+        System.out.println("newTime=" + newTime);
+        
+　　　　　// 日期增量
+        LocalDate date = LocalDate.now();
+        LocalDate newDate = date.plus(1, ChronoUnit.WEEKS);
+        System.out.println("newDate=" + newDate);
+        
+}
+```
+
+> Java8提供了isAfter()、isBefore()用于判断当前日期时间和指定日期时间的比较
+
+```java
+    public static void main(String[] args) {
+        
+        LocalDate now = LocalDate.now();
+        
+        LocalDate date1 = LocalDate.of(2000, 1, 1);
+        if (now.isAfter(date1)) {
+            System.out.println("千禧年已经过去了");
+        }
+        
+        LocalDate date2 = LocalDate.of(2020, 1, 1);
+        if (now.isBefore(date2)) {
+            System.out.println("2020年还未到来");
+        }
+        
+    }
+```
+
+> Java 8不仅分离了日期和时间，也把时区分离出来了。现在有一系列单独的类如ZoneId来处理特定时区，ZoneDateTime类来表示某时区下的时间。
+
+```java
+    public static void main(String[] args) {
+        
+        // 上海时间
+        ZoneId shanghaiZoneId = ZoneId.of("Asia/Shanghai");
+        ZonedDateTime shanghaiZonedDateTime = ZonedDateTime.now(shanghaiZoneId);
+        
+        // 东京时间
+        ZoneId tokyoZoneId = ZoneId.of("Asia/Tokyo");
+        ZonedDateTime tokyoZonedDateTime = ZonedDateTime.now(tokyoZoneId);
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        System.out.println("上海时间: " + shanghaiZonedDateTime.format(formatter));
+        System.out.println("东京时间: " + tokyoZonedDateTime.format(formatter));
+        
+    }
+
+```
+
+#### 使用预定义格式解析与格式化日期
+
+```java
+public static void main(String[] args) {
+        
+        // 解析日期
+        String dateText = "20180924";
+        LocalDate date = LocalDate.parse(dateText, DateTimeFormatter.BASIC_ISO_DATE);
+        System.out.println("格式化之后的日期=" + date);
+        
+        // 格式化日期
+        dateText = date.format(DateTimeFormatter.ISO_DATE);
+        System.out.println("dateText=" + dateText);
+        
+    }
+```
+
+#### 日期和字符串的相互转换
+
+```java
+    public static void main(String[] args) {
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        
+        // 日期时间转字符串
+        LocalDateTime now = LocalDateTime.now();
+        String nowText = now.format(formatter);
+        System.out.println("nowText=" + nowText);
+        
+        // 字符串转日期时间
+        String datetimeText = "1999-12-31 23:59:59";
+        LocalDateTime datetime = LocalDateTime.parse(datetimeText, formatter);
+        System.out.println(datetime);
+        
+    }
+```
+
+
+
