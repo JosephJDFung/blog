@@ -1,6 +1,6 @@
 ## redis其他常用命令
 Redis 提供了丰富的命令（command）对数据库和各种数据类型进行操作，这些 command
-可以在 Linux 终端使用。在编程时，比如各类语言包，这些命令都有对应的方法。下面将 Redis提供的命令做一总结。
+可以在 Linux 终端使用。在编程时，比如各类语言包，这些命令都有对应的方法。
 
 ### 键值相关命令
 #### keys
@@ -119,3 +119,48 @@ redis 127.0.0.1:6379> dbsize
 
 #### flushall
 删除所有数据库中的所有 key。
+
+### Redis安全设置
+- 设置监听IP：
+```
+# vim /etc/redis.conf
+bind 127.0.0.1 127.0.0.2 #设置内网IP，可以是多个，用空格分隔
+```
+
+- 设置监听端口：
+```
+# vim /etc/redis.conf
+port 16000		#默认端口6379
+
+```
+- 设置密码：
+```
+# vim /etc/redis.conf
+requirepass 123123			#密码为123123
+# redis-cli -a '123123'		#重启服务之后再次登录redis
+```
+
+- 禁掉config命令：
+
+```
+# vim /etc/redis.conf
+rename-command CONFIG ""		#保存退出重启服务
+```
+
+### Redis慢查询日志
+- 编辑配置文件：
+```
+# vim /etc/redis.conf			#默认配置
+slowlog-log-slower-than 10000   //单位：μs，即10ms
+slowlog-max-len 128
+```
+针对慢查询日志，可以设置两个参数，一个是执行时长，另一个是慢查询日志的长度。当一个新的命令被写入日志时，最老的一条会从命令日志队列中移除出去。
+```
+slowlog get				#列出所有的慢查询日志
+slowlog get 2				#只列出2条
+slowlog len				#查看慢查询日志条数
+```
+
+
+
+
