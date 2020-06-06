@@ -76,7 +76,7 @@ info replication
 
 #### Sentinel模式搭建
 
-- master节点
+- `sentinel.conf`配置文件
 ```
 # vim /usr/local/redis/sentinel.conf
 
@@ -92,3 +92,66 @@ sentinel down-after-milliseconds mymaster 30000       #判断master主观下线�
 `注意`，sentinel auth-pass mymaster 123456需要配置在sentinel monitor mymaster 下面，否则启动报错
 
 
+### Redis-cluster集群
+
+- redis.conf文件中Redis集群配置参数
+    - `cluster-enabled<yes/no>`：如果是，则在特定的Redis实例中启用Redis Cluster支持。否则，该实例将像往常一样作为独立实例启动。
+    - `cluster-config-file<filename>`：请注意，尽管有此选项的名称，但它不是用户可编辑的配置文件，而是Redis Cluster节点每次发生更改时都会自动持久保存集群配置的文件（状态，基本上是状态），为了能够在启动时重新阅读它。该文件列出了诸如群集中其他节点之类的内容，它们的状态，持久变量等等。通常，由于收到某些消息，此文件将被重写并刷新到磁盘上。
+    - `cluster-node-timeout<milliseconds>`：Redis群集节点不可用的最长时间（不将其视为失败）。如果主节点无法访问的时间超过指定的时间长度，则它的从节点将对其进行故障转移。此参数控制Redis Cluster中的其他重要事项。值得注意的是，在指定的时间内无法到达大多数主节点的每个节点都将停止接受查询。
+    - `cluster-slave-validity-factor<factor>`：如果设置为零，则从服务器将始终尝试对主服务器进行故障转移，而不管主服务器和从服务器之间的链接保持断开状态的时间长短。如果该值为正，则将最大断开时间计算为节点超时值乘以此选项提供的系数，如果节点是从节点，则如果断开主链接的时间超过指定的时间，它将不会尝试启动故障转移。例如，如果节点超时设置为5秒，而有效性因子设置为10，则从服务器与主服务器断开连接超过50秒将不会尝试对其主服务器进行故障转移。请注意，如果没有从属能够对其进行故障转移，则任何非零的值都可能导致Redis群集在主服务器发生故障后不可用。在这种情况下，只有当原始主服务器重新加入集群后，集群才会返回可用状态。
+    - `cluster-migration-barrier<count>`：一个主机将保持连接的最小数量的从机，以便另一个从机迁移到不再被任何从机覆盖的主机。有关更多信息，请参见本教程中有关副本迁移的相应部分。
+    - `cluster-require-full-coverage<yes/no>`：如果设置为yes，默认情况下，如果某个节点未覆盖一定比例的密钥空间，集群将停止接受写入。如果该选项设置为no，即使仅可以处理有关密钥子集的请求，群集仍将提供查询。
+    - `cluster-allow-reads-when-down<yes/no>`：如果将其设置为no（默认情况下为默认值），则当Redis群集被标记为失败时，或者当节点无法到达时，Redis群集中的节点将停止为所有流量提供服务达不到法定人数或完全覆盖。这样可以防止从不了解群集更改的节点读取可能不一致的数据。可以将此选项设置为yes，以允许在失败状态期间从节点进行读取，这对于希望优先考虑读取可用性但仍希望防止写入不一致的应用程序很有用。当仅使用一个或两个分片的Redis Cluster时，也可以使用它，因为它允许节点在主服务器发生故障但无法进行自动故障转移时继续为写入提供服务
+
+#### 最小的Redis群集配置文件
+```
+port 7000
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+```
+
+> 启用集群模式的只是cluster-enabled 指令。每个实例还包含该节点的配置存储位置的文件路径，默认情况下为nodes.conf。该文件永远不会被人类触及。它只是由Redis Cluster实例在启动时生成，并在需要时进行更新。
+
+> 请注意，按预期工作的最小群集要求至少包含三个主节点。对于您的第一个测试，强烈建议启动一个包含三个主节点和三个从节点的六个节点群集。
+
+> 为此，输入一个新目录，并创建以下目录，该目录以我们将在任何给定目录中运行的实例的端口号命名。
+
+```
+mkdir cluster-test
+cd cluster-test
+mkdir 7000 7001 7002 7003 7004 7005
+```
+
+启动每个实例
+```
+../redis-server ./redis.conf
+```
+
+从每个实例的日志中可以看到，由于不nodes.conf存在文件，因此每个节点都会为其分配一个新的ID。
+
+```
+[82462] 26 Nov 11:56:55.329 * No cluster configuration found, I'm 97a3a64667477371c4479320d683e4c8db5858b1
+```
+
+> 创建集群
+
+- 如果使用的是Redis 5，这很容易实现，因为嵌入到中的Redis Cluster命令行实用程序redis-cli将为我们提供帮助，该实用程序可用于创建新集群，检查或重新分片现有集群等。
+
+- 对于Redis版本3或4，有一个称为的旧工具redis-trib.rb，它非常相似。可以src在Redis源代码分发的目录中找到它。需要安装redisgem才能运行redis-trib。
+
+Redis 5创建集群：
+```
+redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+--cluster-replicas 1
+```
+
+Redis的4或3型：
+
+```
+./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005
+```
+此处使用的命令是create，因为我们要创建一个新集群。该选项--cluster-replicas 1意味着我们要为每个创建的主机都希望有一个从机。其他参数是我要用于创建新集群的实例的地址列表。
