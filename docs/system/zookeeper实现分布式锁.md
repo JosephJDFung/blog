@@ -92,6 +92,12 @@ public static void main(String[] args) throws Exception {
 
 >关键的核心操作就只有mutex.acquire()和mutex.release()
 
+- zookeper的实现主要有下面四类类:
+    - InterProcessMutex：分布式可重入排它锁
+    - InterProcessSemaphoreMutex：分布式排它锁
+    - InterProcessReadWriteLock：分布式读写锁
+    - InterProcessMultiLock：将多个锁作为单个实体管理的容器
+
 ## menagerie实现
 
 menagerie基于Zookeeper实现了java.util.concurrent包的一个分布式版本。这个封装是更大粒度上对各种分布式一致性使用场景的抽象。其中最基础和常用的是一个分布式锁的实现： 
