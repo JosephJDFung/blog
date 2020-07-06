@@ -212,3 +212,11 @@ CSS资源放顶部，JS资源放底部
 图片使用png格式
 ```
 
+
+## 参考文章
+
+[HTTP的前世今生](https://coolshell.cn/articles/19840.html)
+
+[HTTP API 认证授权术](https://coolshell.cn/articles/19395.html)
+
+[如何免费的让网站启用HTTPS](https://coolshell.cn/articles/18094.html)
