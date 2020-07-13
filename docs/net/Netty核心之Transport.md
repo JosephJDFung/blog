@@ -8,10 +8,15 @@ Netty 在传输层的API是统一的，这使得比你用 JDK 实现更简单。
 
 
 transport
-- NIO
-- OIO
-- Local(本地)
-- Embedded(内嵌)
+- `NIO` NIO-在高连接数时使用
+- `OIO` OIO-在低连接数、需要低延迟时、阻塞时使用
+- `Local(本地)` Local-在同一个JVM内通信时使用
+- `Embedded(内嵌)` Embedded-测试ChannelHandler时使用
+
+
+
+
+
 
 ## 基于Netty传输的API
 
@@ -126,3 +131,13 @@ OP_ACCEPT|有新连接时得到通知
 OP_CONNECT|连接完成后得到通知
 OP_REA|准备好读取数据时得到通知
 OP_WRITE|写入更多数据到通道时得到通知，大部分时间
+
+## 同个 JVM 内的本地 Transport 通信
+Netty 提供了“本地”传输，为运行在同一个 Java 虚拟机上的服务器和客户之间提供异步通信。此传输支持所有的 Netty 常见的传输实现的 API。
+
+在此传输中，与服务器 Channel 关联的 SocketAddress 不是“绑定”到一个物理网络地址中，而是在服务器是运行时它被存储在注册表中，当 Channel 关闭时它会注销。由于该传输不是“真正的”网络通信，它不能与其他传输实现互操作。因此，客户端是希望连接到使用本地传输的的服务器时，要注意正确的用法。除此限制之外，它的使用是与其他的传输是相同的。
+
+## 内嵌 Transport
+Netty中 还提供了可以嵌入 ChannelHandler 实例到其他的 ChannelHandler 的传输，使用它们就像辅助类，增加了灵活性的方法，使您可以与你的 ChannelHandler 互动。
+
+该嵌入技术通常用于测试 ChannelHandler 的实现，但它也可用于将功能添加到现有的 ChannelHandler 而无需更改代码。嵌入传输的关键是Channel 的实现，称为“EmbeddedChannel”。
