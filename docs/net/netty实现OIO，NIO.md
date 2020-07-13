@@ -174,7 +174,7 @@ public class NettyNioServer {
             ChannelFuture f = b.bind().sync();                    //6 绑定服务器来接受连接
             f.channel().closeFuture().sync();
         } finally {
-            group.shutdownGracefully().sync();                    //7 v
+            group.shutdownGracefully().sync();                    //7 释放所有资源
         }
     }
 }
