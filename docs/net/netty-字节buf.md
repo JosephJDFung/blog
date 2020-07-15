@@ -133,3 +133,105 @@ handleArray(array, 0, length);    //4 使用数组，把偏移量和长度作为
 ```
 
 Netty 尝试使用 CompositeByteBuf 优化 socket I/O 操作，消除 原生 JDK 中可能存在的的性能低和内存消耗问题。虽然这是在Netty 的核心代码中进行的优化，并且是不对外暴露的，但是作为开发者还是应该意识到其影响。
+
+## 字节级别的操作
+
+除了基本的读写操作， ByteBuf 还提供了它所包含的数据的修改方法。
+
+>随机访问索引
+
+ByteBuf 使用zero-based 的 indexing(从0开始的索引)，第一个字节的索引是 0，最后一个字节的索引是 ByteBuf 的 capacity - 1，下面代码是遍历 ByteBuf 的所有字节：
+
+```java
+ByteBuf buffer = ...;
+for (int i = 0; i < buffer.capacity(); i++) {
+    byte b = buffer.getByte(i);
+    System.out.println((char) b);
+}
+```
+
+注意通过索引访问时不会推进 readerIndex （读索引）和 writerIndex（写索引），我们可以通过 ByteBuf 的 readerIndex(index) 或 writerIndex(index) 来分别推进读索引或写索引
+
+>顺序访问索引
+
+ByteBuf 提供两个指针变量支付读和写操作，读操作是使用 readerIndex()，写操作时使用 writerIndex()。这和JDK的ByteBuffer不同，ByteBuffer只有一个方法来设置索引，所以需要使用 flip() 方法来切换读和写模式。
+
+ByteBuf 一定符合：0 <= readerIndex <= writerIndex <= capacity。
+
+![p](https://atts.w3cschool.cn/attachments/image/20170808/1502159492537989.jpg)
+
+
+1. 字节，可以被丢弃，因为它们已经被读
+
+2. 还没有被读的字节是：“readable bytes（可读字节）”
+
+3. 空间可加入多个字节的是：“writeable bytes（写字节）”
+
+>可丢弃字节的字节
+
+标有“可丢弃字节”的段包含已经被读取的字节。他们可以被丢弃，通过调用discardReadBytes() 来回收空间。这个段的初始大小存储在readerIndex，为 0，当“read”操作被执行时递增（“get”操作不会移动 readerIndex）。
+
+ByteBuf.discardReadBytes() 可以用来清空 ByteBuf 中已读取的数据，从而使 ByteBuf 有多余的空间容纳新的数据，但是discardReadBytes() 可能会涉及内存复制，因为它需要移动 ByteBuf 中可读的字节到开始位置，这样的操作会影响性能，一般在需要马上释放内存的时候使用收益会比较大。
+
+>可读字节
+
+ByteBuf 的“可读字节”分段存储的是实际数据。新分配，包装，或复制的缓冲区的 readerIndex 的默认值为 0 。任何操作，其名称以 "read" 或 "skip" 开头的都将检索或跳过该数据在当前 readerIndex ，并且通过读取的字节数来递增。
+
+如果所谓的读操作是一个指定 ByteBuf 参数作为写入的对象，并且没有一个目标索引参数，目标缓冲区的 writerIndex 也会增加了。
+
+>索引管理
+
+在 JDK 的 InputStream 定义了 mark(int readlimit) 和 reset()方法。这些是分别用来标记流中的当前位置和复位流到该位置。
+
+同样，您可以设置和重新定位ByteBuf readerIndex 和 writerIndex 通过调用 markReaderIndex(), markWriterIndex(), resetReaderIndex() 和 resetWriterIndex()。这些类似于InputStream 的调用，所不同的是，没有 readlimit 参数来指定当标志变为无效。
+
+您也可以通过调用 readerIndex(int) 或 writerIndex(int) 将指标移动到指定的位置。在尝试任何无效位置上设置一个索引将导致 IndexOutOfBoundsException 异常。
+
+调用 clear() 可以同时设置 readerIndex 和 writerIndex 为 0。注意，这不会清除内存中的内容。
+
+>查询操作
+
+有几种方法，以确定在所述缓冲器中的指定值的索引。最简单的是使用 indexOf() 方法。更复杂的搜索执行以 ByteBufProcessor 为参数的方法。这个接口定义了一个方法，boolean process(byte value)，它用来报告输入值是否是一个正在寻求的值。
+
+ByteBufProcessor 定义了很多方便实现共同目标值。
+
+>衍生的缓冲区
+
+“衍生的缓冲区”是代表一个专门的展示 ByteBuf 内容的“视图”。这种视图是由 duplicate(), slice(), slice(int, int),readOnly(), 和 order(ByteOrder) 方法创建的。所有这些都返回一个新的 ByteBuf 实例包括它自己的 reader, writer 和标记索引。然而，内部数据存储共享就像在一个 NIO 的 ByteBuffer。这使得衍生的缓冲区创建、修改其 内容，以及修改其“源”实例更廉价。
+
+>ByteBuf 拷贝
+
+如果需要已有的缓冲区的全新副本，使用 copy() 或者 copy(int, int)。不同于派生缓冲区，这个调用返回的 ByteBuf 有数据的独立副本。
+
+若需要操作某段数据，使用 slice(int, int)
+
+```java
+Charset utf8 = Charset.forName("UTF-8");
+ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", utf8); //1 创建一个 ByteBuf 保存特定字节串。
+
+ByteBuf sliced = buf.slice(0, 14);          //2 创建从索引 0 开始，并在 14 结束的 ByteBuf 的新 slice。
+System.out.println(sliced.toString(utf8));  //3 打印 Netty in Action
+
+buf.setByte(0, (byte) 'J');                 //4 更新索引 0 的字节。
+// 5 断言成功，因为数据是共享的，并以一个地方所做的修改将在其他地方可见。
+assert buf.getByte(0) == sliced.getByte(0);
+```
+
+下面看下如何将一个 ByteBuf 段的副本不同于 slice。
+
+```java
+Charset utf8 = Charset.forName("UTF-8");
+ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", utf8);     //1 创建一个 ByteBuf 保存特定字节串。
+
+ByteBuf copy = buf.copy(0, 14);               //2 创建从索引0开始和 14 结束 的 ByteBuf 的段的拷贝。
+System.out.println(copy.toString(utf8));      //3 打印 Netty in Action
+
+buf.setByte(0, (byte) 'J');                   //4 更新索引 0 的字节。
+// 5 因为数据不是共享的，并以一个地方所做的修改将不影响其他
+assert buf.getByte(0) != copy.getByte(0);
+```
+
+代码几乎是相同的，但所 衍生的 ByteBuf 效果是不同的。因此，使用一个 slice 可以尽可能避免复制内存。
+
+### 读/写操作
+
