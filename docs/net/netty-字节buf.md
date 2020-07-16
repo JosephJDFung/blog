@@ -235,3 +235,86 @@ assert buf.getByte(0) != copy.getByte(0);
 
 ### 读/写操作
 
+读/写操作主要由2类：
+
+- gget()/set() 操作从给定的索引开始，保持不变
+- read()/write() 操作从给定的索引开始，与字节访问的数量来适用，递增当前的写索引或读索引
+
+>下面是常见的 get() 操作
+
+方法名称|描述
+-|-
+getBoolean(int)|返回当前索引的 Boolean 值
+getByte(int) getUnsignedByte(int)|返回当前索引的(无符号)字节
+getMedium(int) getUnsignedMedium(int)|返回当前索引的 (无符号) 24-bit 中间值
+getInt(int) getUnsignedInt(int)|返回当前索引的(无符号) 整型
+getLong(int) getUnsignedLong(int)|返回当前索引的 (无符号) Long 型
+getShort(int) getUnsignedShort(int)|返回当前索引的 (无符号) Short 型
+getBytes(int, ...)|字节
+
+>et() operations
+
+方法名称|描述
+-|-
+setBoolean(int, boolean)|在指定的索引位置设置 Boolean 值
+setByte(int, int)|在指定的索引位置设置 byte 值
+setMedium(int, int)|在指定的索引位置设置 24-bit 中间 值
+setInt(int, int)|在指定的索引位置设置 int 值
+setLong(int, long)|在指定的索引位置设置 long 值
+setShort(int, int)|在指定的索引位置设置 short 值
+
+>get() and set()用法
+
+```java
+Charset utf8 = Charset.forName("UTF-8");
+ByteBuf buf = Unpooled.copiedBuffer("Netty in Action rocks!", utf8);    //1 创建一个新的 ByteBuf 给指定 String 保存字节
+System.out.println((char)buf.getByte(0));                    //2 打印的第一个字符，N
+
+int readerIndex = buf.readerIndex();                        //3 存储当前 readerIndex 和 writerIndex
+int writerIndex = buf.writerIndex();
+
+buf.setByte(0, (byte)'B');                            //4 更新索引 0 的字符B
+
+System.out.println((char)buf.getByte(0));                    //5 打印出的第一个字符，现在B
+assert readerIndex == buf.readerIndex();                    //6 断言成功，因为这些操作永远不会改变索引
+assert writerIndex ==  buf.writerIndex();
+
+```
+
+> read() 方法
+
+方法名称|描述
+-|-
+readBoolean()　|　Reads the Boolean value at the current readerIndex and increases the readerIndex by 1.
+readByte()　readUnsignedByte()　|Reads the (unsigned) byte value at the current readerIndex and increases　the readerIndex by 1.
+readMedium()　readUnsignedMedium()　|Reads the (unsigned) 24-bit medium value at the current readerIndex and　increases the readerIndex by 3.
+readInt()　readUnsignedInt()|　Reads the (unsigned) int value at the current readerIndex and increases　the readerIndex by 4.
+readLong()　readUnsignedLong()　|　Reads the (unsigned) int value at the current readerIndex and increases　the readerIndex by 8.
+readShort()　readUnsignedShort()|	Reads the (unsigned) int value at the current readerIndex and increases　the readerIndex by 2.
+readBytes(int,int, ...)|Reads the value on the current readerIndex for the given length into the　given object. Also increases the readerIndex by the length.
+
+>read() 方法都对应一个　write()
+
+方法名称|描述
+-|-
+writeBoolean(boolean)|Writes the Boolean value on the current writerIndex and increases the　writerIndex by 1.
+writeByte(int)	|　Writes the byte value on the current writerIndex and increases the　writerIndex by 1.
+writeMedium(int)	|　Writes the medium value on the current writerIndex and increases the　writerIndex by 3.
+writeInt(int)	|　Writes the int value on the current writerIndex and increases the　writerIndex by 4.
+writeLong(long)	|　Writes the long value on the current writerIndex and increases the　writerIndex by 8.
+writeShort(int)	|　Writes the short value on the current writerIndex and increases thewriterIndex by 2.
+writeBytes(int，...）	|　Transfers the bytes on the current writerIndex from given resources.
+
+>更多操作
+
+方法名称|	描述
+-|-
+isReadable()|	Returns true if at least one byte can be read.
+isWritable()|	Returns true if at least one byte can be written.
+readableBytes()|	Returns the number of bytes that can be read.
+writablesBytes()|	Returns the number of bytes that can be written.
+capacity()|	Returns the number of bytes that the ByteBuf can hold. After this it will try to expand again until maxCapacity() is reached.
+maxCapacity()|	Returns the maximum number of bytes the ByteBuf can hold.
+hasArray()|	Returns true if the ByteBuf is backed by a byte array.
+array()|	Returns the byte array if the ByteBuf is backed by a byte array, otherwise throws an
+
