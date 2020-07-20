@@ -281,3 +281,109 @@ password *****
 --fields-enclosed- by= char|指定文本文件中数据的记录时以什么括起的， 很多情况下 数据以双引号括起。 默认的情况下数据是没有被字符括起的。
 --fields-terminated- by=char|指定各个数据的值之间的分隔符，在句号分隔的文件中， 分隔符是句号。您可以用此选项指定数据之间的分隔符。 默认的分隔符是跳格符（Tab）
 --lines-terminated- by=str|此选项指定文本文件中行与行之间数据的分隔字符串 或者字符。 默认的情况下mysqlimport以newline为行分隔符。 您可以选择用一个字符串来替代一个单个的字符： 一个新行或者一个回车。
+
+## [MySQL 内置函数](https://www.runoob.com/mysql/mysql-functions.html)
+
+- 字符串函数
+- 数字函数
+- 日期函数
+- 高级函数(查看mysql运行信息)
+
+## 配置文件my.ini / my.cnf
+
+```yml
+[mysqld]
+# 设置3306端口
+port=3306
+# 设置mysql的安装目录
+basedir=D:\mysql-8.0.12-winx64\mysql-8.0.12-winx64\
+# 设置mysql数据库的数据的存放目录
+datadir=D:\database\MySQL\Data
+# 允许最大连接数
+max_connections=200
+# 允许连接失败的次数。这是为了防止有人从该主机试图攻击数据库系统
+max_connect_errors=10
+# 服务端使用的字符集默认为UTF8
+character-set-server=utf8
+# 创建新表时将使用的默认存储引擎
+default-storage-engine=INNODB
+# 默认使用“mysql_native_password”插件认证
+default_authentication_plugin=mysql_native_password
+
+[mysql]
+# 设置mysql客户端默认字符集
+default-character-set=utf8
+[client]
+# 设置mysql客户端连接服务端时默认使用的端口
+port=3306
+default-character-set=utf8
+```
+
+>配置文件的内容查找
+
+```shell
+# 查看并发数
+mysql> show status like 'Threads%';
+# 查看mysql服务器的最大连接数值
+mysql> show variables like '%max_connections%';
+# 查看mysql服务器响应的最大连接数:
+mysql> show global status like 'Max_used_connections';
+```
+
+>配置文件my.cnf的内容修改
+
+```shell
+
+# 设置mysql服务器的最大连接数值
+mysql> set GLOBAL max_connections=256
+```
+
+>myisam相关配置
+
+```yml
+#一般用来缓存MyISAM表的主键，也用于临时的磁盘表缓存主键，上面多次出现临时磁盘表，所以就算不用MyISAM也最好为其设置一个不小的值，默认32M
+key_buffer_size = 64M
+#全表扫描MyISAM表时的缓存，每个线程拥有下行的大小。
+read_buffer_size = 2M
+#排序操作时与磁盘之间的缓存，分到每个线程，默认16M
+read_rnd_buffer_size = 24M
+#MyISAM使用特殊树形进行批量插入时的缓存，如insert ... values(..)(..)(..)
+bulk_insert_buffer_size = 64M
+#MyISAM索引文件的最大限定，
+myisam_max_sort_file_size = 10G
+#如果一个myisam表有一个以上的索引， MyISAM可以使用一个以上线程来排序并行它们。较耗硬件资源，如果你的环境不错，可以增加此值。
+myisam_repair_threads = 2
+#自动检查和修复无法正确关闭MyISAM表。
+myisam_recover
+```
+
+>innodb相关配置
+
+```yml
+#开启下条将会禁用 INNODB
+#skip-innodb
+#一般不用设置或者说设了也没多大用，InnoDB会自己与操作系统交互管理其附加内存池所使用InnoDB的存储数据的大小
+innodb_additional_mem_pool_size = 16M
+#innodb整体缓冲池大小，不宜过大，设为本地内存的 50%-75% 比较合适,在本机开发过程中可以设得较小一点如 64M,256M
+innodb_buffer_pool_size = 256M
+#InnoDB的数据存储在一个或多个数据文件组成的表空间
+innodb_data_file_path = ibdata1:10M:autoextend
+#用于异步IO操作的线程数量，默认为 4 ，可适当提高
+innodb_file_io_threads = 8
+#线程数内允许的InnoDB内核,不宜太高
+innodb_thread_concurrency = 16
+#InnoDB的事务日志快存行为,默认为 1，为0可减轻磁盘I/0操作，还有以为2
+innodb_flush_log_at_trx_commit = 1
+#InnoDB的用于的缓冲日志数据的大小
+innodb_log_buffer_size = 8M
+#日志文件，可设置为25%-90%的总体缓存大小，默认 256M. 修改此项要先删除datadir\ib_logfileXXX
+innodb_log_file_size = 256M
+#日志组数量，默认为3
+innodb_log_files_in_group = 3
+#InnoDB的日志文件位置。默认是MySQL的datadir
+#innodb_log_group_home_dir
+#InnoDB最大允许的脏页缓冲池的百分比，默认90
+innodb_max_dirty_pages_pct = 80
+#事务死锁超时设定
+innodb_lock_wait_timeout = 120
+```
