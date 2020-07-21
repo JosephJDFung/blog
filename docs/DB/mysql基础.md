@@ -57,6 +57,7 @@ MySQL存储引擎在MySQL中扮演重要角色，其作比较重要作用，大�
 其中，比较常用的存储引擎包括InnoDB存储引擎，MyISAM存储引擎和Momery存储引擎。
 
 >物理文件（File System）
+
 实际存储MySQL 数据库文件和一些日志文件等的系统，如Linux，Unix,Windows等。
 
 物理文件包括：redolog、undolog、binlog（复制时还有relaylog）、errorlog、querylog、slowlog、data、index
