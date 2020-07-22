@@ -2,6 +2,8 @@
 
 使用MySQL插件式存储引擎体系结构，允许数据库用户为特定的应用需求选择专门的存储引擎，完全不需要管理任何特殊的应用编码要求。采用MySQL服务器体系结构，由于在存储级别上提供了一致和简单的应用模型和API，应用程序编程人员和DBA可不再考虑所有的底层实施细节。因此，尽管不同的存储引擎具有不同的能力，应用程序是与之分离的。
 
+![](https://img2018.cnblogs.com/i-beta/1397037/202002/1397037-20200220161412192-910498182.png)
+
 >InnoDB 存储引擎
 
 InnoDB 是事务型数据库的首选引擎，支持事务安全表 (ACID)，支持行锁定和外键。`MySQL5.5.5 之后，InnoDB 作为默认存储引擎`，InnoDB 主要特性有：
@@ -11,6 +13,34 @@ InnoDB 是事务型数据库的首选引擎，支持事务安全表 (ACID)，支
 - InnoDB 存储引擎完全与 MySQL 服务器整合，InnoDB 存储引擎为在主内存中缓存数据和索引而维持它自己的缓冲池。InnoDB 将它的表和索引存在一个逻辑表空间中，表空间可以包含数个文件（或原始磁盘分区）。这与 MyISAM 表不同，比如在 MyISAM 表中每个表被存在分离的文件中。InnoDB 表可以是任何尺寸，即使在文件尺寸被艰制为 2GB 的操作系统上。
 - InnoDB 支持外键完整性约束（FOREIGN KEY)。 存储表中的数据时，每张表的存储都按主键顺序存放，如果没有显示在表定义时指定主键，InnoDB 会被每一行生成一个 6B 的 ROWID，并以此作为主健。
 - InnoDB 被用在众多需要高性能的大型数据库站点上。 InnoDB 不创建目录，使用 InnoDB 时，MySQL 将在 MYSQL 数据目录下创建一个名为 ibdata1 的 10MB 大小的自动扩展数据文件，以及两个名为ib_logfile() 和 ib_logfile1 的 5MB 大小的日志文件。
+
+- hash索引的创建由InnoDB存储引擎引擎自动优化创建，根据表的使用创建，程序员干预不了
+
+>innodb逻辑存储结构
+
+innodb的逻辑存储单元由大到小分别是 tablespace,segment,extent,page(block)组成
+
+![](https://upload-images.jianshu.io/upload_images/6807865-f4eb8cca559045f3.png?imageMogr2/auto-orient/strip|imageView2/2/w/705/format/webp)
+
+- 表空间(tablespace)
+
+所有数据都是存放在表空间中的，启用了参数innodb_file_per_table，则每张表内的数据可以单独放到一个表空间中，每张表空间内存放的只是数据，索引和插入缓冲，其他类的数据，如undo信息，系统事务信息，二次写缓冲等还是存放在原来你的共享表空间。
+
+- 段(segment)
+
+常见的segment有数据段、索引段、回滚段。innodb是索引聚集表，所以数据就是索引，索引就是数据，那么数据段即是B+树的页节点(leaf node segment)，索引段即为B+树的非索引节点(non-leaf node segment)。而且段的管理是由引擎本身完成的。
+
+- 区(extend)
+
+　    区是由64个连续的页主成，每个页大小为16K，即每个区的大小为(64*16K)=1MB,对于大的数据段，mysql每次最多可以申请4个区，以此保证数据的顺序性能。
+
+- 页(page)
+
+页是innodb磁盘管理最小的单位，innodb每个页的大小是16K，且不可更改。常见的类型有：数据页 B-tree Node；undo页 Undo Log Page；系统页 System Page；事务数据页 Transaction system Page；插入缓冲位图页 Insert Buffer Bitmap；插入缓冲空闲列表页 Insert Buffer freeBitmap；未压缩的二进制大对象页Uncompressed BLOB Page；压缩的二进制大对象页 Compressed BLOB Page。
+
+4.2.5、行
+
+innodb存储引擎是面向行的(row-oriented),也就是说数据的存放按行进行存放。每个页最多可以存放16K/2～200行,也就是7992个行。
 
 >MyISAM 存储引擎
 
