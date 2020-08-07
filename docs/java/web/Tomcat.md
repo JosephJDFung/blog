@@ -181,3 +181,5 @@ buffered 是否缓冲输出，使其只定期刷新，默认为true
 其他调优参考：
 
 [Springboot Tomcat APR模式详解和实践](https://www.jianshu.com/p/f716726ba340)
+
+[Spring boot+Docker 实现内嵌tomcat Apr模式部署](https://blog.csdn.net/huanglitao0912/article/details/82428565?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-9.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-9.nonecase)
