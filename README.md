@@ -75,7 +75,7 @@
 
     
 - [系统设计](#系统设计)
-    - [常用框架(Spring/SpringBoot、Zookeeper ... )](#常用框架)
+    - [微服务](#微服务)
     - [数据通信/中间件(消息队列、RPC ... )](#数据通信中间件)
       - [rabbitMq]](#rabbitMq)
       - [rocketMq](#rocketMq)
@@ -83,10 +83,17 @@
     - [权限认证](#权限认证)
       - [shiro]](#shiro)
       - [spring security](#security)
-    - [分布式 & 微服务](#分布式--微服务)
-      - [API 网关](#api-网关)
-      - [配置中心](#配置中心)
-      - [唯一 id 生成](#唯一-id-生成)
-      - [服务治理：服务注册与发现、服务路由控制](#服务治理服务注册与发现服务路由控制)
-    - [架构](#架构)
-    
+    - [分布式](#分布式)
+      - [分布式锁](docs\system\分布式锁.md)
+      - [redis实现分布式锁](docs\system\redis实现分布式锁.md)
+      - [zookeeper实现分布式锁](docs\system\zookeeper实现分布式锁.md)
+      - [唯一 id 生成](docs\theory\分布式id.md)
+      - [分布式事务](docs\theory\分布式事务.md)
+
+- [理论](#理论)
+  - [设计模式](docs\theory\设计模式.md)
+  - [JDK里的设计模式](docs\theory\JDK里的设计模式.md)
+  - [Spring设计模式应用](docs\theory\Spring设计模式应用.md)
+  - [LRU简介](docs\theory\LRU.md)
+  - [OAuth2.0](docs\theory\OAuth2.0.md)
+      
