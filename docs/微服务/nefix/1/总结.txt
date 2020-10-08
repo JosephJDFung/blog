@@ -1,0 +1,24 @@
+﻿1.引入组件的启动器
+2.覆盖默认配置
+3.在引导类上添加注解，开发相关组件
+Map<serviceId， Map<服务实例名，实例对象(instance)>>
+
+1.架构的演变
+传统架构-->水平拆分-->垂直拆分（最早的分布式）-->soa(dubbo)-->微服务(springCloud)
+
+2.远程调用技术：rpc http
+rpc协议：自定义数据格式，限定技术，传输速度快，效率高 tcp，dubbo
+http协议：统一的数据格式，不限定技术 rest接口  tcp协议 springCloud
+
+3.什么是springCloud
+微服务架构的解决方案，是很多组件的集合
+eureka：注册中心，服务的注册与发现
+zull：网关协议，路由请求，过滤器（ribbon hystrix）
+ribbon：负载均衡组件
+hystrix：熔断组件
+feign：远程调用组件(ribbon hystrix)
+
+*4.eureka
+注册中心：itcast-eureka（1.引入启动器， 2.配置spring.application.name=itcast-eureka 3.在引导类上@EnableEurekaServer）
+客户端：itcast-service-provider itcast-service-consumer
+	（1.引入启动器 2.配置spring.application.name eureka.client.service-url.defaultZone=http://localhost:10086/eureka 3.@EnableDiscoveryClient(启用eure客户端)）
