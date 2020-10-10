@@ -80,6 +80,8 @@
     - [Dubbo协议参考](docs//微服务//Dubbo协议参考.md)
     - [Dubbo注意事项](docs//微服务//Dubbo注意事项.md)
     - [Dubbo SPI](docs//微服务//DubboSPI.md)
+    - [Dubbo SPI 的扩展点自适应机制](docs//微服务//DubboSPI的扩展点自适应机制.md)
+    
   - [springcloud-netflix](docs//system//微服.md)
     - [（整理转载）Eureka 服务注册中心](docs//微服务//nefix//1//Eureka.md)
     - [（整理转载）Ribbon 负载均衡](docs//微服务//nefix//1//Ribbon.md)
