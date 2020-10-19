@@ -121,6 +121,12 @@
     - [第三方应用](docs//system//微服.md)
       - [springsocial](docs//system//微服.md)
 
+- [DevOps]](#理论)
+  - [docker](docs//theory//.md)
+  - [jenkins](docs//theory//.md)
+  - [gitlab](docs//theory//.md)
+  - [k8s](docs//theory//.md)
+
 - [理论](#理论)
   - [设计模式](docs//theory//设计模式.md)
   - [JDK里的设计模式](docs//theory//JDK里的设计模式.md)
